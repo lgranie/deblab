@@ -6,6 +6,7 @@ Preseed Creator (c) Luc Didry 2017, GNU GPLv3
 preseed-creator [options]
     Options:
         -i <image.iso>              ISO image to preseed. If not provided, the script will download and use the latest Debian amd64 netinst ISO image
+        -k <ssh_key.pub>            Public ssh key
         -o <preseeded_image.iso>    output preseeded ISO image. Default to debian-preseed.iso
         -p <preseed_file.cfg>       preseed file. If not provided, the script will put "d-i debian-installer/locale string fr_FR" in the preseed.cfg file
         -w <directory>              directory used to work on ISO image files. Default is a temporary folder in /tmp
@@ -106,10 +107,13 @@ DOWNLOAD_NETINST=""
 DOWNLOAD_PRESEED=""
 TIMEOUT=0
 
-while getopts ":i:o:p:t:xdgvw:h" opt; do
+while getopts ":i:k:o:p:t:xdgvw:h" opt; do
     case $opt in
         i)
             INPUT=$OPTARG
+            ;;
+        k)
+            SSH_KEY_PUB_FILE=$OPTARG
             ;;
         o)
             OUTPUT=$OPTARG
@@ -277,6 +281,11 @@ mkdir irmod -p
     else
         cp "$PRESEED" preseed.cfg
     fi
+    if [[ -z $SSH_KEY_PUB_FILE ]]; then
+        [[ $VERBOSE == 1 ]] && echo "Copying ssh_key_pub to initrd"
+        cp "$SSH_KEY_PUB_FILE" custom/ssh_key.pub
+    fi
+
     [[ $VERBOSE == 1 ]] && echo "Putting new content into initrd.gz"
     if ! (find . | cpio -H newc --create 2> /dev/null | gzip -9 > ../cd/install.amd/initrd.gz 2> /dev/null); then
         echo "Error while putting new content into ../cd/install.amd/initrd.gz. Aborting."

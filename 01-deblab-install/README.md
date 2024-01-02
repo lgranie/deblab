@@ -6,10 +6,10 @@ Just enough preseed for ansible
 
 # Init
 ```
-sudo apt install wget genisoimage rsync cpio xorriso
+sudo apt install wget gpg genisoimage rsync cpio xorriso
 ```
 
 # Build install iso
 ```
-wget -c https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso
-sudo ./preseed-creator -i debian-testing-amd64-netinst.iso -p preseed.cfg -o deblab-testing-amd64-netinst.iso
+sudo ./preseed-creator -p preseed.cfg -k ~/.ssh/id_ed25519.pub -o deblab-testing-amd64-netinst.iso
+```
