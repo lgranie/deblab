@@ -15,7 +15,7 @@ preseed-creator [options]
                                     Default is 0
         -x                          Use xorriso instead of genisoimage, to create an iso-hybrid
         -d                          download the latest Debian amd64 netinst ISO image in the current folder and exit
-        -g                          download the latest Debian stable example preseed file into preseed_example.cfg and exit
+        -g                          download the latest Debian testing example preseed file into preseed_example.cfg and exit
         -v                          activate verbose mode
         -h                          print this help and exit
 EOF
@@ -56,13 +56,13 @@ function download_latest_iso {
     else
         [[ $VERBOSE == 0 ]] && echo -ne 'Downloading latest Debian amd64 netinst ISO [===>                          ](10%)\r'
     fi
-    [[ $VERBOSE == 1 ]] && echo "Parsing https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/ to fetch the latest netinst ISO file"
-    LATEST=$(wget -q -O - https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/ | grep "netinst.iso" | grep -v "debian-mac" | grep -v "debian-edu" | sed -e 's@.*a href="\([^"]*\)".*@\1@')
+    [[ $VERBOSE == 1 ]] && echo "Parsing https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/ to fetch the latest netinst ISO file"
+    LATEST=$(wget -q -O - https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/ | grep "netinst.iso" | grep -v "debian-mac" | grep -v "debian-edu" | sed -e 's@.*a href="\([^"]*\)".*@\1@')
     [[ $VERBOSE == 1 ]] && echo "The latest netinst ISO file is $LATEST"
-    wget "$WGETOPT" https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/"$LATEST" -O debian-netinst-latest.iso
+    wget "$WGETOPT" https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/"$LATEST"
 
-    wget "$WGETOPT" https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/SHA512SUMS -O SHA512SUMS
-    wget "$WGETOPT" https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/SHA512SUMS.sign -O SHA512SUMS.sign
+    wget "$WGETOPT" https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/SHA512SUMS -O SHA512SUMS
+    wget "$WGETOPT" https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/SHA512SUMS.sign -O SHA512SUMS.sign
 
     if [[ $ONLY_DOWNLOAD == 1 ]]; then
         [[ $VERBOSE == 0 ]] && echo -ne 'Verifying GPG signature                     [======================>       ](75%)\r'
@@ -82,7 +82,7 @@ function download_latest_iso {
         [[ $VERBOSE == 0 ]] && echo -ne 'Veryfying sha512sum                         [=========>                    ](30%)\r'
     fi
     [[ $VERBOSE == 1 ]] && echo "Fixing SHA512SUMS file"
-    sed -e "s@${LATEST}@debian-netinst-latest.iso@" -i SHA512SUMS
+    sed -e "s@${LATEST}@debian-testing-amd64-netinst.iso@" -i SHA512SUMS
 
     [[ $VERBOSE == 1 ]] && echo "Veryfying the sha512sum of the ISO file"
     if ! (sha512sum --ignore-missing -c SHA512SUMS > /dev/null 2>&1); then
@@ -168,11 +168,11 @@ if [[ -n $DOWNLOAD_NETINST ]]; then
     download_latest_iso 1
 fi
 if [[ -n $DOWNLOAD_PRESEED ]]; then
-    echo "Downloading latest Debian stable example preseed file into preseed_example.cfg"
+    echo "Downloading latest Debian testing example preseed file into preseed_example.cfg"
     if [[ $VERBOSE == 0 ]]; then
         WGETOPT=""
     fi
-    wget "$WGETOPT" https://www.debian.org/releases/stable/example-preseed.txt -O preseed_example.cfg
+    wget "$WGETOPT" https://www.debian.org/releases/testing/example-preseed.txt -O preseed_example.cfg
     echo "Done"
     exit
 fi
@@ -204,10 +204,10 @@ else
 fi
 
 if [[ -z $INPUT ]]; then
-    echo "No ISO image provided, will download the latest Debian amd64 netinst ISO image"
+    echo "No ISO image provided, will download the latest Debian testing amd64 netinst ISO image"
     download_latest_iso 0
 
-    INPUT="debian-netinst-latest.iso"
+    INPUT="debian-testing-amd64-netinst.iso"
 else
     if [[ ${INPUT:0:1} != / ]]; then
         INPUT="${MYPWD}/${INPUT}"
