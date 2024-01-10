@@ -1,0 +1,21 @@
+---
+- name: bare_metal
+  hosts: bare_metal
+  become: true
+  gather_facts: true
+
+  roles:
+    - role: debian-update
+    - role: bare-network
+
+- name: firewall
+  hosts: lx_firewall
+  become: true
+  gather_facts: true
+
+- name: kube
+  hosts: lx_kube
+  become: true
+  gather_facts: true
+...
+

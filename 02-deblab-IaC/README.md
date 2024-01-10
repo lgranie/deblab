@@ -3,13 +3,14 @@
 # Init ansible
 ## Requirements
 ```
-sudo apt install python3-pip python3-venv
+sudo apt install python3-venv
 ```
 ## Init python venv
 ```
 python3 -m venv .venv
+source .venv/bin/activate
 ```
 ## Install ansible
 ```
-.venv/bin/python3 -m pip install --upgrade ansible
+pip install --upgrade ansible
 ```
