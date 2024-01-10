@@ -13,7 +13,7 @@ sudo apt-get install build-essential linux-source bc kmod cpio flex libncurses5-
 tar xavf /usr/src/linux-source-X.YY.tar.xz
 cd linux-source-X.YY
 cp ../config-X.YY ./.config
-make ARCH=x86 defconfig
+make ARCH=x86 menuconfig
 export DEB_BUILD_PROFILES='pkg.linux.nokerneldbg pkg.linux.nokerneldbginfo'
 nice make -j6 bindeb-pkg LOCALVERSION=-x4xl KDEB_PKGVERSION=$(make kernelversion)-1
 ```
