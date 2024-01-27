@@ -1,28 +1,4 @@
 ---
 # tasks file for bare-network
-
-- name: Update repositories cache and install "bare-network" packages
-  ansible.builtin.apt:
-    pkg:
-    - lxc
-    update_cache: yes
-
-- name: Configure our bare system to forward IP packets
-  ansible.posix.sysctl:
-    name: net.ipv4.ip_forward
-    value: '1'
-    sysctl_set: true
-    state: present
-    reload: true
-
-- name: lxbr0 config
-  ansible.builtin.copy:
-    dest: /etc/network/interfaces.d/lxbr0.conf
-    content: '\
-auto lxcbr0
-iface lxcbr0 inet dhcp
-  bridge_ports enp2s0
-  bridge_fd 0
-  bridge_maxwait 0
-'
-...
+- include_tasks : bare-packages.yml
+- include_tasks : bare-netconfig.yml

@@ -1,0 +1,8 @@
+---
+- name: Update repositories cache and install "bare-network" packages
+  ansible.builtin.apt:
+    pkg:
+    - isc-dhcp-server
+    - incus
+    update_cache: yes
+...

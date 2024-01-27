@@ -1,15 +1,17 @@
+WIP
+
 # Insprirations
  - https://debian-handbook.info/browse/pl-PL/stable/sect.kernel-compilation.html
  - https://kernel-team.pages.debian.net/kernel-handbook/ch-common-tasks.html#s-common-official
  - https://wiki.debian.org/BuildADebianKernelPackage
 
 # Init
-```
+```script shell
 sudo apt-get install build-essential linux-source bc kmod cpio flex libncurses5-dev libelf-dev libssl-dev dwarves bison
 ```
 
 # Build kernel package
-```
+```script shell
 tar xavf /usr/src/linux-source-X.YY.tar.xz
 cd linux-source-X.YY
 cp ../config-X.YY ./.config

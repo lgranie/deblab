@@ -281,15 +281,17 @@ mkdir irmod -p
     else
         cp "$PRESEED" preseed.cfg
     fi
-    if [[ -z $SSH_KEY_PUB_FILE ]]; then
-        [[ $VERBOSE == 1 ]] && echo "Copying ssh_key_pub to initrd"
-        cp "$SSH_KEY_PUB_FILE" custom/ssh_key.pub
-    fi
 
     [[ $VERBOSE == 1 ]] && echo "Putting new content into initrd.gz"
     if ! (find . | cpio -H newc --create 2> /dev/null | gzip -9 > ../cd/install.amd/initrd.gz 2> /dev/null); then
         echo "Error while putting new content into ../cd/install.amd/initrd.gz. Aborting."
         exit 17
+    fi
+
+    if [[ ! -z $SSH_KEY_PUB_FILE ]]; then
+        [[ $VERBOSE == 1 ]] && echo "Copying ssh_key_pub to cd/deblad"
+        mkdir -p cd/deblab
+        cp "$SSH_KEY_PUB_FILE" cd/deblab/ssh_key.pub
     fi
 )
 
