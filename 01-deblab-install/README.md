@@ -16,9 +16,9 @@ sudo apt install wget gpg genisoimage rsync cpio xorriso isolinux
 # Build install iso
 ## Debian testing ( default if no -i option passed )
 ```script shell
-sudo ./preseed-creator -p preseed.cfg -k ~/.ssh/id_ed25519.pub -i debian-testing-amd64-netinst.iso -o deblab-testing-amd64-netinst.iso -x -v
+sudo ./preseed-creator -p preseed.cfg -k ~/.ssh/id_ed25519.pub -g ./grub.cfg -i debian-testing-amd64-netinst.iso -o deblab-testing-amd64-netinst.iso -t 1 -x -v
 ```
 ## Debian stable
 ```script shell
-sudo ./preseed-creator -p preseed.cfg -k ~/.ssh/id_ed25519.pub -i debian-12.4.0-amd64-netinst.iso -o deblab-12.4.0-amd64-netinst.iso -x -v
+sudo ./preseed-creator -p preseed.cfg -k ~/.ssh/id_ed25519.pub -g ./grub.cfg -i debian-12.4.0-amd64-netinst.iso -o deblab-12.4.0-amd64-netinst.iso -t 1 -x -v
 ```

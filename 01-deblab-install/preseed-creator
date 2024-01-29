@@ -106,6 +106,7 @@ TMPDIR=""
 DOWNLOAD_NETINST=""
 DOWNLOAD_PRESEED=""
 TIMEOUT=0
+GRUG_CFG="${MYPWD}/grub.cfg"
 
 while getopts ":i:k:o:p:t:xdgvw:h" opt; do
     case $opt in
@@ -290,9 +291,11 @@ mkdir irmod -p
 
     if [[ ! -z $SSH_KEY_PUB_FILE ]]; then
         [[ $VERBOSE == 1 ]] && echo "Copying ssh_key_pub to cd/deblad"
-        mkdir -p cd/deblab
-        cp "$SSH_KEY_PUB_FILE" cd/deblab/ssh_key.pub
+        mkdir -p ../cd/deblab
+        cp "$SSH_KEY_PUB_FILE" ../cd/deblab/ssh_key.pub
     fi
+    cp -f "$GRUG_CFG" ../cd/boot/grub/grub.cfg
+
 )
 
 rm -rf irmod/
