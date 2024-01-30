@@ -26,5 +26,8 @@ sudo ./preseed-creator -p preseed.cfg -k ~/.ssh/id_ed25519.pub -g ./grub.cfg -i 
 # Testing with qemu
 ```script shell
 qemu-img create -f qcow2 deblab.img 24G
-qemu-system-x86_64.exe -cdrom deblab-testing-amd64-netinst.iso -net nic -net user -bios /usr/share/ovmf/OVMF.fd -drive file=deblab.img,if=none,id=nvm-device -device nvme,serial=deadbeef,drive=nvm-device -m 4096 -smp 4 -boot d
+
+qemu-system-x86_64 -cdrom deblab-testing-amd64-netinst.iso -net nic -net user -bios /usr/share/ovmf/OVMF.fd -drive file=deblab.img,if=none,id=nvm-device -device nvme,serial=deadbeef,drive=nvm-device -m 4096 -smp 4 -boot d
+
+qemu-system-x86_64 -net nic -net user -bios /usr/share/ovmf/OVMF.fd -drive file=deblab.img,if=none,id=nvm-device -device nvme,serial=deadbeef,drive=nvm-device -m 4096 -smp 4
 ```

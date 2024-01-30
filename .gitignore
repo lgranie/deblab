@@ -1,3 +1,4 @@
 00-deblab-lkc/linux-source-*
 01-deblab-install/*iso
+01-deblab-install/*img
 02-deblab-IaC/.venv/
