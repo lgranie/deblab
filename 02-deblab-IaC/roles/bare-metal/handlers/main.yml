@@ -1,0 +1,14 @@
+---
+- name: Restarting networking service
+  ansible.builtin.systemd_service:
+    state: restarted
+    daemon_reload: true
+    name: networking
+  notify: Restarting dhcp server service
+
+- name: Restarting services-pod service
+  ansible.builtin.systemd_service:
+    state: restarted
+    daemon_reload: true
+    name: services-pod  
+...

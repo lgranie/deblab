@@ -5,16 +5,16 @@
   gather_facts: true
 
   roles:
-    - role: debian-update
-    - role: bare-network
+    #- role: debian-update
+    - role: bare-metal
 
 - name: firewall
-  hosts: lx_firewall
+  hosts: lxc_firewall
   become: true
   gather_facts: true
 
 - name: kube
-  hosts: lx_kube
+  hosts: lxc_kube
   become: true
   gather_facts: true
 ...

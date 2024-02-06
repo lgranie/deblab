@@ -1,4 +1,0 @@
----
-# tasks file for bare-network
-- include_tasks : bare-packages.yml
-- include_tasks : bare-netconfig.yml

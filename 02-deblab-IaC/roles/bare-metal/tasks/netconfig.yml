@@ -1,0 +1,142 @@
+---
+- name: Get network
+  ansible.builtin.apt:
+    pkg:
+      - bridge-utils
+      - iptables
+    update_cache: no
+
+- name: Configure our bare system to forward IP packets
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    sysctl_set: true
+    state: present
+    reload: true
+  notify: Restarting networking service
+
+- name: Init /etc/network/interfaces
+  ansible.builtin.copy:
+    dest: /etc/network/interfaces
+    content: |
+      source /etc/network/interfaces.d/*
+      
+      # The loopback network interface
+      auto lo
+      iface lo inet loopback
+      
+      # WAN interface
+      allow-hotplug enp5s0
+      iface enp5s0 inet manual
+        up /etc/network/if-up.d/deblab-wan.sh
+        down /etc/network/if-down.d/deblab-wan.sh
+      
+      # LAN interfaces
+      allow-hotplug enp2s0
+      iface enp2s0 inet manual
+      
+      allow-hotplug enp3s0
+      iface enp3s0 inet manual
+      
+      allow-hotplug enp4s0
+      iface enp4s0 inet manual
+      
+      # LAN bridge
+      auto lanbr0
+      iface lanbr0 inet manual
+        # Config Bridge
+        bridge_ports enp2s0 enp3s0 enp4s0
+        bridge_waitport 0  # no delay before a port becomes available
+        bridge_fd 0        # no forwarding delay
+        bridge_maxwait 0
+        up /etc/network/if-up.d/deblab-lan.sh
+  notify: Restarting networking service
+
+- name: DebLab UP script ( wan )
+  ansible.builtin.copy:
+    dest: /etc/network/if-up.d/deblab-wan.sh
+    content: |
+      #!/bin/sh
+      
+      if [ "$IFACE" = "enp5s0" ]; then
+        # Init netns wan
+        if [ ! -f /run/netns/wan ]; then
+          ip netns add wan
+          ip netns exec wan ip link set dev lo up
+          
+          # Attach enp5s0 to wan
+          ip link set enp5s0 netns wan
+          
+          # Create virt cable to connect wan and lanbr0
+          ip link add veth0 type veth peer name veth1 || :
+        fi
+        
+        # Attach veth0 to wan
+        ip link set veth0 netns wan
+        ip netns exec wan ip addr add 10.10.10.1/24 dev veth0
+        ip netns exec wan ip link set dev veth0 up
+        
+        # Optain Public IP via dhcp
+        ip netns exec wan dhclient -nw -v -i enp5s0
+        sleep 10
+        
+        # Simple firewall / nat rules
+        ip netns exec wan sysctl -q -w net.ipv4.ip_forward=1
+        # ip netns exec wan sysctl -q -w net.ipv4.conf.all.rp_filter=0
+        # ip netns exec wan sysctl -q -w net.ipv4.conf.enp5s0.forwarding=1
+        
+        # Clean iptables
+        ip netns exec wan iptables --flush
+        ip netns exec wan iptables --delete-chain
+        ip netns exec wan iptables --table nat --flush
+        ip netns exec wan iptables --table nat --delete-chain
+        
+        # DROP everything else
+        ip netns exec wan iptables -P INPUT   DROP
+        ip netns exec wan iptables -P FORWARD DROP
+        ip netns exec wan iptables -P OUTPUT  DROP
+        
+        # Allow dhcp client request
+        ip netns exec wan iptables -A OUTPUT -p udp -o enp5s0 --match multiport --dports 67,68 -m conntrack --ctstate NEW,ESTABLISHED     -j ACCEPT
+        ip netns exec wan iptables -A INPUT  -p udp -i enp5s0 --match multiport --dports 67,68 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+        
+        # Masquerade lan to outside & forward
+        ip netns exec wan iptables -t nat -A POSTROUTING -s 10.10.10.0/24 -o enp5s0 -j MASQUERADE
+        ip netns exec wan iptables -A FORWARD -i veth0  -o enp5s0 -m conntrack --ctstate NEW,ESTABLISHED     -j ACCEPT
+        ip netns exec wan iptables -A FORWARD -i enp5s0 -o veth0  -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+      fi
+    mode: '0755'
+  notify: Restarting networking service
+
+- name: DebLab UP script ( lan )
+  ansible.builtin.copy:
+    dest: /etc/network/if-up.d/deblab-lan.sh
+    content: |
+      #!/bin/sh
+      
+      if [ "$IFACE" = "lanbr0" ]; then
+        # Setup lanbr0
+        ip addr add 10.10.10.100/24 dev lanbr0
+        
+        # Setup veth1 ( link to wan )
+        ip link set veth1 master lanbr0
+        ip link set dev veth1 up
+        
+        # Setup lan routes
+        ip route del default
+        ip route add default via 10.10.10.1
+        # ip route del 10.10.10.0/24
+        # ip route add 10.10.10.0/24 via 10.10.10.100 dev lanbr0
+      fi
+    mode: '0755'
+  notify: Restarting networking service
+
+- name: DebLab DOWN script ( wan )
+  ansible.builtin.copy:
+    dest: /etc/network/if-down.d/deblab-wan.sh
+    content: |
+      #!/bin/sh
+      
+    mode: '0755'
+  notify: Restarting networking service
+...
