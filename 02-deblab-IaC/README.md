@@ -4,7 +4,7 @@
  - https://mike42.me/blog/2018-03-automating-lxc-container-creation-with-ansible
  - https://gist.github.com/maxivak/1e197ca600499ae2a0b60d8dfa207864
  - https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking#bridge
-
+ - https://www.cloudnull.io/2019/04/running-services-in-network-name-spaces-with-systemd/
 # Goal
 
 ## Physical interface

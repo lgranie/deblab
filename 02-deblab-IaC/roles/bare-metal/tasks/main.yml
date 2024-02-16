@@ -1,6 +1,7 @@
 ---
 # tasks file for bare-metal
 #- include_tasks : dhcp-server.yml
-- include_tasks : netconfig.yml
+- include_tasks : netconfig-lan-bridge.yml
+- include_tasks : netconfig-wan.yml
 - include_tasks : podman.yml
 - include_tasks : podman-pihole.yml

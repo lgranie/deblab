@@ -11,94 +11,28 @@
     - /run/systemd/generator/default.target.wants
 
 - name: Copy pod definition
-  ansible.builtin.copy:
-    dest: /root/services-pod/services-pod.yml
-    content: |
-      kind: Pod
-      metadata:
-        creationTimestamp: "2024-02-06T10:17:42Z"
-        labels:
-          app: services-pod
-        name: services-pod
-      spec:
-        hostNetwork: true
-        dnsConfig:
-          nameservers:
-            - 127.0.0.1
-            - 1.1.1.1
-            - 1.0.0.1
-        containers:
-          - name: pihole
-            image: pihole/pihole:latest
-            securityContext:
-              capabilities:
-                add: ["NET_ADMIN", "NET_RAW"]
-            volumeMounts:
-              - mountPath: /etc/pihole
-                name: etc-pihole
-              - mountPath: /etc/dnsmasq.d
-                name: etc-dnsmasq.d
-            env:
-              - name: INTERFACE
-                value: "lanbr0"
-              - name: IPV6
-                value: "true"
-              - name: TZ
-                value: "Europe/Paris"
-              - name: PIHOLE_DNS
-                value: "1.1.1.1,1.0.0.1"
-              - name: PIHOLE_DOMAIN
-                value: "granie.home"
-              - name: FTLCONF_LOCAL_IPV4
-                value: "10.10.10.100"
-              - name: VIRTUAL_HOST
-                value: "deblab.granie.home"
-              - name: WEBPASSWORD 
-                value: "0000"
-              - name: DHCP_ACTIVE
-                value: "true"
-              - name: DHCP_START
-                value: "10.10.10.150"
-              - name: DHCP_END
-                value: "10.10.10.180"
-              - name: DHCP_ROUTER
-                value: "10.10.10.1"
-              - name: DHCP_IPV6
-                value: "true"
-        volumes:
-          - name: etc-pihole
-            hostPath:
-              path: /media/data/pihole/etc-pihole
-              type: Directory
-          - name: etc-dnsmasq.d
-            hostPath:
-              path: /media/data/pihole/etc-dnsmasq.d
-              type: Directory
-  notify: Restarting services-pod service
+  ansible.builtin.template:
+    src: root/services-pod/pihole-pod.yml.j2
+    dest: /root/services-pod/pihole-pod.yml      
+  notify:
+    - Restarting pihole-pod service
 
 - name: Copy systemd pod definition
   ansible.builtin.copy:
-    dest: /etc/containers/systemd/services-pod.kube
-    content: |
-      [Unit]
-      Description=A podman pod yaml based services
-      After=network-online.target
-      
-      [Kube]
-      Yaml=/root/services-pod/services-pod.yml
-      
-      [Install]
-      # Start by default on boot
-      WantedBy=multi-user.target default.target
-  notify: Restarting services-pod service
+    src: etc/containers/systemd/pihole.kube
+    dest: /etc/containers/systemd/pihole-pod.kube      
+  notify:
+    - Reload systemd
 
 - name: Create a symbolic link
   ansible.builtin.file:
-    src: /run/systemd/generator/services-pod.service
-    dest: /run/systemd/generator/default.target.wants/services-pod.service
+    src: /run/systemd/generator/pihole-pod.service
+    dest: /run/systemd/generator/default.target.wants/pihole-pod.service
     state: link
     force: true
-  notify: Restarting services-pod service
+  notify:
+    - Reload systemd
+    - Restarting pihole-pod service
 
 - name: Get stats before of adlists.list
   ansible.builtin.stat:
@@ -106,11 +40,15 @@
     get_checksum: yes
   register: adlist_before
 
+- name: get service facts
+  ansible.builtin.service_facts:
+
 - name: "Import adlists with bash"
   loop_control:
     loop_var: adlist
-  ansible.builtin.command: "podman exec services-pod-pihole /bin/sh -c '/usr/local/bin/pihole -a adlist add {{ adlist }}'"
-  loop: "{{ pihole_adlist}}"
+  ansible.builtin.command: "podman exec pihole-pod-pihole /bin/sh -c '/usr/local/bin/pihole -a adlist add {{ adlist }}'"
+  loop: "{{ pihole.adlist}}"
+  when: ( ansible_facts.services["pihole-pod.service"] is defined and ansible_facts.services["pihole-pod.service"].state == "running" ) 
     
 - name: Get stats after of adlists.list
   ansible.builtin.stat:
@@ -118,7 +56,7 @@
     get_checksum: yes
   register: adlist_after
 
-- name: "Restarting services-pod-pihole gravity"
-  ansible.builtin.command: "podman exec services-pod-pihole /bin/sh -c '/usr/local/bin/pihole -g'"
-  when: ( not adlist_before.stat.exists or adlist_after.stat.checksum != adlist_before.stat.checksum )
+- name: "Restarting pihole-pod-pihole gravity"
+  ansible.builtin.command: "podman exec pihole-pod-pihole /bin/sh -c '/usr/local/bin/pihole -g'"
+  when: ( ( ansible_facts.services["pihole-pod.service"] is defined and ansible_facts.services["pihole-pod.service"].state == "running" ) and ( not adlist_before.stat.exists or adlist_after.stat.checksum != adlist_before.stat.checksum ) )
 ...
