@@ -4,12 +4,6 @@ source /etc/network/interfaces.d/*
 auto lo
 iface lo inet loopback
 
-# WAN interface
-allow-hotplug enp5s0
-iface enp5s0 inet manual
-    up /etc/network/if-up.d/ns-wan.sh
-    down /etc/network/if-down.d/ns-wan.sh
-
 # LAN interfaces
 allow-hotplug enp2s0
 iface enp2s0 inet manual
@@ -20,12 +14,6 @@ iface enp3s0 inet manual
 allow-hotplug enp4s0
 iface enp4s0 inet manual
 
-# LAN bridge
-auto lanbr0
-iface lanbr0 inet manual
-    # Config Bridge
-    bridge_ports enp2s0 enp3s0 enp4s0
-    bridge_waitport 0  # no delay before a port becomes available
-    bridge_fd 0        # no forwarding delay
-    bridge_maxwait 0
-    up /etc/network/if-up.d/deblab-lan.sh
+# WAN interface
+allow-hotplug enp5s0
+iface enp5s0 inet manual

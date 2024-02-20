@@ -1,12 +1,13 @@
 ---
-- name: Reload systemd
+- name: Disable networking service
   ansible.builtin.systemd_service:
+    enabled: false
     daemon_reload: true
-
-- name: Restarting networkd service
+    name: networking
+     
+- name: Enable networkd service
   ansible.builtin.systemd_service:
-    state: restarted
+    enabled: true
     daemon_reload: true
     name: systemd-networkd
-
 ...

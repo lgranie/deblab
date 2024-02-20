@@ -1,4 +1,7 @@
 ---
+- name: Init podman
+  import_tasks: podman.yml
+
 - name: Creates directories
   file:
     path: "{{ item }}"
@@ -8,31 +11,30 @@
     - /root/services-pod/
     - /media/data/pihole/etc-pihole
     - /media/data/pihole/etc-dnsmasq.d
-    - /run/systemd/generator/default.target.wants
 
 - name: Copy pod definition
   ansible.builtin.template:
     src: root/services-pod/pihole-pod.yml.j2
-    dest: /root/services-pod/pihole-pod.yml      
-  notify:
-    - Restarting pihole-pod service
+    dest: /root/services-pod/pihole-pod.yml
+  register: kube_definition_changed
 
 - name: Copy systemd pod definition
   ansible.builtin.copy:
     src: etc/containers/systemd/pihole.kube
-    dest: /etc/containers/systemd/pihole-pod.kube      
-  notify:
-    - Reload systemd
+    dest: /etc/containers/systemd/pihole-pod.kube
+  register: kube_definition_changed
 
-- name: Create a symbolic link
-  ansible.builtin.file:
-    src: /run/systemd/generator/pihole-pod.service
-    dest: /run/systemd/generator/default.target.wants/pihole-pod.service
-    state: link
-    force: true
-  notify:
-    - Reload systemd
-    - Restarting pihole-pod service
+- name: Reload systemd daemon
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+  when: kube_definition_changed
+
+- name: Restarting pihole-pod service
+  ansible.builtin.systemd_service:
+    state: restarted
+    daemon_reload: true
+    name: pihole-pod
+  when: kube_definition_changed
 
 - name: Get stats before of adlists.list
   ansible.builtin.stat:
@@ -48,7 +50,7 @@
     loop_var: adlist
   ansible.builtin.command: "podman exec pihole-pod-pihole /bin/sh -c '/usr/local/bin/pihole -a adlist add {{ adlist }}'"
   loop: "{{ pihole.adlist}}"
-  when: ( ansible_facts.services["pihole-pod.service"] is defined and ansible_facts.services["pihole-pod.service"].state == "running" ) 
+  when: ( ansible_facts.services["pihole-pod.service"] is defined and ansible_facts.services["pihole-pod.service"].state == "running" )
     
 - name: Get stats after of adlists.list
   ansible.builtin.stat:

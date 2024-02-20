@@ -1,0 +1,67 @@
+---
+- name: Get network tools
+  ansible.builtin.apt:
+    pkg:
+      - bridge-utils
+    update_cache: no
+
+- name: Init /etc/network/interfaces
+  ansible.builtin.copy:
+    src: etc/network/interfaces
+    dest: /etc/network/interfaces.bck
+  notify:
+    - Restarting networkd service
+
+- name: Init /etc/network/interfaces
+  ansible.builtin.file:
+    path: /etc/network/interfaces
+    state: absent
+
+- name: Copy systemd lan network definition
+  ansible.builtin.copy:
+    src: etc/systemd/network/10-lanbr0.netdev
+    dest: /etc/systemd/network/
+    mode: '0644'
+  notify:
+    - Restarting networkd service
+
+- name: Copy systemd lan network definition
+  ansible.builtin.copy:
+    src: etc/systemd/network/11-lanbr0-nic.network
+    dest: /etc/systemd/network/
+    mode: '0644'
+  notify:
+    - Restarting networkd service
+
+- name: Copy systemd lan network definition
+  ansible.builtin.copy:
+    src: etc/systemd/network/12-lan.network
+    dest: /etc/systemd/network/
+    mode: '0644'
+  notify:
+    - Restarting networkd service
+
+- name: Copy systemd networkd wait online configuration
+  ansible.builtin.copy:
+    src: etc/systemd/system/systemd-networkd-wait-online.service.d/wait-for-only-lanbr0.conf
+    dest: /etc/systemd/system/systemd-networkd-wait-online.service.d/
+    mode: '0644'
+  notify:
+    - Restarting networkd service
+
+- name: Copy systemd-netns
+  ansible.builtin.copy:
+    src: etc/systemd/system/systemd-netns@.service
+    dest: /etc/systemd/system/
+    mode: '0644'
+  notify:
+    - Restarting networkd service
+
+- name: Copy systemd-netns-access
+  ansible.builtin.copy:
+    src: etc/systemd/system/systemd-netns-access@.service
+    dest: /etc/systemd/system/
+    mode: '0644'
+  notify:
+    - Restarting networkd service
+...

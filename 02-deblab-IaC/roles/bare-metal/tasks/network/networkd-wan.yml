@@ -1,0 +1,47 @@
+---
+- name: Get network tools
+  ansible.builtin.apt:
+    pkg:
+      - iptables
+    update_cache: no
+
+- name: Wan up script
+  ansible.builtin.copy:
+    src: etc/network/if-up.d/ns-wan.sh
+    dest: /etc/network/if-up.d/ns-wan.sh
+    mode: '0744'
+  notify:
+    - Restarting networkd service
+   
+- name: Wan down script
+  ansible.builtin.copy:
+    src: etc/network/if-down.d/ns-wan.sh
+    dest: /etc/network/if-down.d/ns-wan.sh
+    mode: '0744'
+  notify:
+    - Restarting networkd service
+
+- name: Copy systemd wan service.d
+  ansible.builtin.copy:
+    src: etc/systemd/system/wan.service.d/
+    dest: /etc/systemd/system/wan.service.d/
+    mode: '0644'
+  notify:
+    - Reload systemd
+    - Restarting networkd service
+
+- name: Copy systemd wan service
+  ansible.builtin.copy:
+    src: etc/systemd/system/wan.service
+    dest: /etc/systemd/system/
+    mode: '0644'
+  notify:
+    - Reload systemd
+    - Restarting networkd service
+
+- name: Enable wan service
+  ansible.builtin.systemd_service:
+    enabled: true
+    daemon_reload: true
+    name: wan
+...

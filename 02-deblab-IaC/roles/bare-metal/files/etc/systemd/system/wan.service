@@ -1,0 +1,14 @@
+[Unit]
+Description=Wan Filtering Framework
+DefaultDependencies=no
+After=systemd-sysctl.service
+#Before=sysinit.target
+
+[Service]
+Type=oneshot
+ExecStart=bash -c "echo Starting WAN"
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=network-online.target

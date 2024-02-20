@@ -1,0 +1,67 @@
+---
+- name: Update repositories cache and install dhcp server packages
+  ansible.builtin.apt:
+    pkg:
+    - kea-dhcp4-server
+    update_cache: no
+
+- name: Configure dhcp server
+  ansible.builtin.copy:
+    dest: /etc/kea/kea-dhcp4.conf
+    content: |
+      {
+        "Dhcp4": {
+        "interfaces-config": {
+          "interfaces": [ "lanbr0" ]
+        },
+        "control-socket": {
+            "socket-type": "unix",
+            "socket-name": "/run/kea/kea4-ctrl-socket"
+        },
+        "lease-database": {
+            "type": "memfile",
+            "lfc-interval": 3600
+        },
+        "valid-lifetime": 600,
+        "max-valid-lifetime": 7200,
+        "subnet4": [
+          {
+            "id": 1,
+            "subnet": "10.10.10.0/24",
+            "pools": [
+              {
+                "pool": "10.10.10.150 - 10.10.10.200"
+              }
+            ],
+            "option-data": [
+              {
+                "name": "routers",
+                "data": "10.10.10.1"
+              },
+              {
+                "name": "domain-name-servers",
+                "data": "10.10.10.100, 192.168.1.100, 1.1.1.1, 8.8.8.8, 192.168.1.100"
+              },
+              {
+                "name": "domain-name",
+                "data": "granie.home"
+              }
+            ]
+          }
+        ],
+        "loggers": [
+          {
+            "name": "kea-dhcp4",
+            "output_options": [
+              {
+                "output": "syslog",
+                "pattern": "%-5p %m\n"
+              }
+            ],
+            "severity": "INFO",
+            "debuglevel": 0
+          }
+        ]
+      }}
+  notify: Restarting dhcp server service
+...

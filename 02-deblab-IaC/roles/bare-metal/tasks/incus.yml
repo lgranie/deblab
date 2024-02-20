@@ -1,0 +1,33 @@
+---
+- name: Update repositories cache and install incus packages
+  ansible.builtin.apt:
+    pkg:
+      - incus
+      - dnsmasq-base
+      # for vm
+      - incus-agent
+      - qemu-system-x86t
+    update_cache: yes
+
+- name: Init incus
+  ansible.builtin.shell:
+    shell: cat EOF << | indus admin init --preseed
+      config:
+        core.https_address: 10.10.10.1:9999
+        images.auto_update_interval: 15
+      networks:
+        - name: lxbr0
+          type: bridge
+          config:
+            ipv4.address: auto
+            ipv6.address: none
+      storage:
+        - name: data
+          driver: lvm
+          config:
+            lvm.thinpool_name: IncusThinPool
+            lvm.vg_name: ALL
+            source: ALL
+            volatile.initial_source: ALL
+      EOF
+...

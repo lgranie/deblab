@@ -1,7 +1,13 @@
 ---
-# tasks file for bare-metal
-#- include_tasks : dhcp-server.yml
-- include_tasks : netconfig-lan-bridge.yml
-- include_tasks : netconfig-wan.yml
-- include_tasks : podman.yml
-- include_tasks : podman-pihole.yml
+- name: Configure lan network
+  import_tasks: network/networkd-lan.yml
+
+- name: Configure wan network
+  import_tasks: network/networkd-wan.yml
+
+- name: Install/Configure pihole-pod
+  import_tasks: dhcp/podman-pihole.yml
+
+- name: Configure networkd
+  import_tasks: network/networkd.yml
+...
