@@ -5,8 +5,9 @@
   gather_facts: true
   roles:
     - role: debian-update
-    - role: dotfiles
+    #- role: dotfiles
     - role: bare-metal
+    - role: ns-nas
 
 - name: kube
   hosts: lx_kube

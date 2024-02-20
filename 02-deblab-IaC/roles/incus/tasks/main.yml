@@ -1,0 +1,4 @@
+---
+- name: Init lx nas namespace
+  import_tasks: init.yml
+...
