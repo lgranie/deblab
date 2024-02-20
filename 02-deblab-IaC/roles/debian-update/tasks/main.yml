@@ -14,7 +14,7 @@
   register: reboot_required_file
   stat: path=/var/run/reboot-required get_checksum=no
 
-- name: Reboot the Debian or Ubuntu server
+- name: Reboot the Debian
   reboot:
     msg: "Reboot initiated by Ansible due to kernel updates"
     connect_timeout: 5
