@@ -3,11 +3,10 @@
   hosts: bare_metal
   become: true
   gather_facts: true
-
   roles:
     - role: debian-update
+    - role: dotfiles
     - role: bare-metal
-    #- role: lx-nas
 
 - name: kube
   hosts: lx_kube
