@@ -4,15 +4,22 @@
     pkg: "{{ dotfiles.dependencies }}"
     update_cache: no
 
+- name: Check if the dotfiles directory exists
+  ansible.builtin.stat:
+    path: "/home/{{ dotfiles.user.login }}/.dotfiles"
+  register: dotfiles_dir
+
 - name: Deleting .bashrc
   ansible.builtin.file:
     path: "/home/{{ dotfiles.user.login }}/.bashrc"
     state: absent
+  when: dotfiles_dir.stat.isdir is defined and not dotfiles_dir.stat.isdir
 
 - name: Deleting .bash_logout
   ansible.builtin.file:
     path: "/home/{{ dotfiles.user.login }}/.bash_logout"
     state: absent
+  when: dotfiles_dir.stat.isdir is defined and not dotfiles_dir.stat.isdir
 
 - name: Deleting .profile
   ansible.builtin.file:
@@ -20,6 +27,7 @@
     state: absent
   become: yes
   become_user: "{{ dotfiles.user.login }}"
+  when: dotfiles_dir.stat.isdir is defined and not dotfiles_dir.stat.isdir
 
 - name: Generate SSH key
   ansible.builtin.user:
@@ -31,10 +39,12 @@
     ssh_key_passphrase: ""
     force: no
 
-- name: Copy ssh config
-  ansible.builtin.template:
-    src: home/.ssh/config.j2
-    dest: "/home/{{ dotfiles.user.login }}/.ssh/"
+- name: Add a host in the configuration
+  community.general.ssh_config:
+    user: "{{ dotfiles.user.email }}"
+    host: "{{ dotfiles.repo.server }}"
+    identity_file: "/home/{{ dotfiles.user.login }}/.ssh/id_ed25519"
+    state: present
 
 - name: Cloning dotfiles repo
   ansible.builtin.git:
@@ -47,7 +57,7 @@
 
 - name: Installing configs
   ansible.builtin.command:
-    cmd: "stow {{ item }}"
+    cmd: "stow -R {{ item }}"
     chdir: "/home/{{ dotfiles.user.login }}/.dotfiles"
   with_items:
     "{{ dotfiles.configs }}"
