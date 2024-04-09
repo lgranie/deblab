@@ -6,12 +6,12 @@
       - dnsmasq-base
       # for vm
       - incus-agent
-      - qemu-system-x86t
+      - qemu-system-x86
     update_cache: yes
 
 - name: Init incus
   ansible.builtin.shell:
-    shell: cat EOF << | indus admin init --preseed
+    shell: cat EOF << | incus admin init --preseed
       config:
         core.https_address: 10.10.10.1:9999
         images.auto_update_interval: 15
