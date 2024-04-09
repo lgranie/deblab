@@ -37,8 +37,8 @@ bare_metal:
     nas:
       nfs:
         exports:
-          - /media/downloads *.granie.home(fsid=0,rw,sync,no_subtree_check,annouid=1010,anongid=1010)
-          - /media/music     *.granie.home(fsid=1,rw,sync,no_subtree_check,annouid=1010,anongid=1010)
-          - /media/photos    *.granie.home(fsid=2,rw,sync,no_subtree_check,annouid=1010,anongid=1010)
-          - /media/movies    *.granie.home(fsid=3,rw,sync,no_subtree_check,annouid=1010,anongid=1010)
-          - /media/tvshows   *.granie.home(fsid=4,rw,sync,no_subtree_check,annouid=1010,anongid=1010)
+          - /media/downloads *.granie.home(fsid=0,rw,sync,no_subtree_check,anonuid=1010,anongid=1010)
+          - /media/music     *.granie.home(fsid=1,rw,sync,no_subtree_check,anonuid=1010,anongid=1010)
+          - /media/photos    *.granie.home(fsid=2,rw,sync,no_subtree_check,anonuid=1010,anongid=1010)
+          - /media/movies    *.granie.home(fsid=3,rw,sync,no_subtree_check,anonuid=1010,anongid=1010)
+          - /media/tvshows   *.granie.home(fsid=4,rw,sync,no_subtree_check,anonuid=1010,anongid=1010)
