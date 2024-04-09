@@ -19,8 +19,8 @@ ExecStart=/usr/bin/env ip link set %i-veth1 master lanbr0
 ExecStart=/usr/bin/env ip link set dev %i-veth1 up
 
 # Finalizing netns config
-ExecStart=sh -c 'if [ -e "/etc/network/if-up.d/ns-wan.sh" ]; then /etc/network/if-up.d/ns-wan.sh; fi'
-ExecStop=sh -c 'if [ -e "/etc/network/if-up.d/ns-wan.sh" ]; then /etc/network/if-down.d/ns-wan.sh; fi'
+ExecStart=sh -c 'if [ -e "/etc/network/if-up.d/ns-%i.sh" ]; then /etc/network/if-up.d/ns-%i.sh; fi'
+ExecStop=sh -c 'if [ -e "/etc/network/if-up.d/ns-%i.sh" ]; then /etc/network/if-down.d/ns-%i.sh; fi'
 
 [Install]
 WantedBy=multi-user.target

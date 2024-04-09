@@ -1,5 +1,5 @@
 [Unit]
-Description=A podman pod yaml based services
+Description=A pihole podman pod yaml based services
 After=network-online.target
 
 [Kube]

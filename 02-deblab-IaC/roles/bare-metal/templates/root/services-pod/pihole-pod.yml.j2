@@ -9,8 +9,8 @@ spec:
   dnsConfig:
     nameservers:
       - 127.0.0.1
-      - 1.1.1.1
-      - 1.0.0.1
+      - 9.9.9.9
+      - 149.112.112.112
   containers:
     - name: pihole
       image: pihole/pihole:latest
@@ -29,8 +29,10 @@ spec:
           value: "true"
         - name: TZ
           value: "Europe/Paris"
+        - name: DNSSEC
+          value: "true"
         - name: PIHOLE_DNS
-          value: "1.1.1.1,1.0.0.1"
+          value: "9.9.9.9,149.112.112.112"
         - name: PIHOLE_DOMAIN
           value: "{{ domain }}"
         - name: FTLCONF_LOCAL_IPV4

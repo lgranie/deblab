@@ -24,17 +24,24 @@
     dest: /etc/containers/systemd/pihole-pod.kube
   register: kube_definition_changed
 
+- name: Pull pihole image
+  containers.podman.podman_image:
+    name: pihole/pihole
+    force: true
+    tag: latest
+  register: image_changed
+
 - name: Reload systemd daemon
   ansible.builtin.systemd_service:
     daemon_reload: true
-  when: kube_definition_changed
+  when: kube_definition_changed or image_changed
 
 - name: Restarting pihole-pod service
   ansible.builtin.systemd_service:
     state: restarted
     daemon_reload: true
     name: pihole-pod
-  when: kube_definition_changed
+  when: kube_definition_changed or image_changed
 
 - name: Get stats before of adlists.list
   ansible.builtin.stat:
