@@ -28,7 +28,7 @@ ip netns exec wan iptables -P OUTPUT  DROP
 # Allow dhcp client request
 ip netns exec wan iptables -A OUTPUT -p udp -o enp5s0 --match multiport --dports 67,68 -m conntrack --ctstate NEW,ESTABLISHED     -j ACCEPT
 ip netns exec wan iptables -A INPUT  -p udp -i enp5s0 --match multiport --dports 67,68 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-        
+
 # Masquerade lan to outside & forward
 ip netns exec wan iptables -t nat -A POSTROUTING -s 10.10.10.0/24 -o enp5s0 -j MASQUERADE
 ip netns exec wan iptables -A FORWARD -i wan-veth0 -o enp5s0     -m conntrack --ctstate NEW,ESTABLISHED     -j ACCEPT
