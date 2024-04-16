@@ -3,7 +3,8 @@ bare-metal
 
 Setup network :
   - wan netns
-  - pihole as DHS & DHCP server
+  - lan netns
+#  - dmz netns
 
 License
 -------

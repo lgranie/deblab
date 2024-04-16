@@ -4,10 +4,7 @@
 
 - name: Configure wan network
   import_tasks: network/networkd-wan.yml
-
-- name: Install/Configure pihole-pod
-  import_tasks: dhcp/podman-pihole.yml
-
+  
 - name: Configure networkd
   import_tasks: network/networkd.yml
 ...
