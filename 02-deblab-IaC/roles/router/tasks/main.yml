@@ -5,6 +5,9 @@
 - name: Configure wan network
   import_tasks: network/networkd-wan.yml
   
+#- name: Configure default dhcp server
+#  import_tasks: dhcp/dhcp-server.yml
+  
 - name: Configure networkd
   import_tasks: network/networkd.yml
 ...

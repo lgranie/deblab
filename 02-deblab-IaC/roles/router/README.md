@@ -1,4 +1,4 @@
-bare-metal
+router
 =========
 
 Setup network :

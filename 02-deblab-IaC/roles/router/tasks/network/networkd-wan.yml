@@ -27,7 +27,6 @@
     dest: /etc/systemd/system/wan.service.d/
     mode: '0644'
   notify:
-    - Reload systemd
     - Restarting networkd service
 
 - name: Copy systemd wan service
@@ -36,7 +35,6 @@
     dest: /etc/systemd/system/
     mode: '0644'
   notify:
-    - Reload systemd
     - Restarting networkd service
 
 - name: Enable wan service
