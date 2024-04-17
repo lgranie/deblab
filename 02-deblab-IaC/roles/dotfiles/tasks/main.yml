@@ -4,31 +4,6 @@
     pkg: "{{ dotfiles.dependencies }}"
     update_cache: no
 
-- name: Check if the dotfiles directory exists
-  ansible.builtin.stat:
-    path: "/home/{{ dotfiles.user.login }}/.dotfiles"
-  register: dotfiles_dir
-
-- name: Deleting .bashrc
-  ansible.builtin.file:
-    path: "/home/{{ dotfiles.user.login }}/.bashrc"
-    state: absent
-  when: dotfiles_dir.stat.isdir is defined and not dotfiles_dir.stat.isdir
-
-- name: Deleting .bash_logout
-  ansible.builtin.file:
-    path: "/home/{{ dotfiles.user.login }}/.bash_logout"
-    state: absent
-  when: dotfiles_dir.stat.isdir is defined and not dotfiles_dir.stat.isdir
-
-- name: Deleting .profile
-  ansible.builtin.file:
-    path: "/home/{{ dotfiles.user.login }}/.profile"
-    state: absent
-  become: yes
-  become_user: "{{ dotfiles.user.login }}"
-  when: dotfiles_dir.stat.isdir is defined and not dotfiles_dir.stat.isdir
-
 - name: Generate SSH key
   ansible.builtin.user:
     name: "{{ dotfiles.user.login }}"
@@ -38,13 +13,41 @@
     ssh_key_file: .ssh/id_ed25519
     ssh_key_passphrase: ""
     force: no
+  register: user_created
+
+- name: Deleting origin dotfiles
+  ansible.builtin.file:
+    path: "/home/{{ dotfiles.user.login }}/{{ item }}"
+    state: absent
+  loop:
+    - .bashrc
+    - .bash_logout
+    - .profile
+  when: user_created.changed
 
 - name: Add a host in the configuration
   community.general.ssh_config:
-    user: "{{ dotfiles.user.email }}"
+    user: "{{ dotfiles.user.login }}"
+    remote_user: "{{ dotfiles.user.email }}"
     host: "{{ dotfiles.repo.server }}"
     identity_file: "/home/{{ dotfiles.user.login }}/.ssh/id_ed25519"
     state: present
+  when: user_created.changed
+
+- name: Pause until you can add pub key to github
+  ansible.builtin.debug:
+    var: user_created.ssh_public_key
+  when: user_created.changed
+
+- name: Pause until you can add pub key to github
+  ansible.builtin.pause:
+  when: user_created.changed
+
+- name: "Accept {{ dotfiles.repo.server }} ssh fingerprints"
+  shell: ssh-keyscan -H {{ dotfiles.repo.server }} >> ~/.ssh/known_hosts
+  become: yes
+  become_user: "{{ dotfiles.user.login }}"
+  when: user_created.changed
 
 - name: Cloning dotfiles repo
   ansible.builtin.git:
@@ -54,6 +57,7 @@
     update: yes
   become: yes
   become_user: "{{ dotfiles.user.login }}"
+  register: dotfiles_updated
 
 - name: Installing configs
   ansible.builtin.command:
@@ -63,4 +67,5 @@
     "{{ dotfiles.configs }}"
   become: yes
   become_user: "{{ dotfiles.user.login }}"
+  when: dotfiles_updated.changed
 ...
