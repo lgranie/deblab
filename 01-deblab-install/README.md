@@ -1,8 +1,8 @@
 # Insprirations
+ - https://framagit.org/fiat-tux/hat-softwares/preseed-creator
  - https://www.debian.org/releases/trixie/example-preseed.txt
  - https://preseed.debian.net/debian-preseed/trixie/amd64-main-full.txt
  - https://github.com/coreprocess/linux-unattended-installation/blob/master/ubuntu/20.04/custom/preseed.cfg
- - https://framagit.org/fiat-tux/hat-softwares/preseed-creator
  - https://notabug.org/LiohMoeller/installbox/src/master/preseed.cfg
 
 # Just enough preseed for ansible
@@ -11,6 +11,15 @@
 # Init
 ```script shell
 sudo apt install wget gpg genisoimage rsync cpio xorriso isolinux ovmf
+```
+# Edit preseed.cfg
+```script shell
+d-i netcfg/get_hostname string deblab
+d-i netcfg/get_domain string granie.home
+```
+```script shell
+encrypt password
+d-i passwd/user-password-crypted password $1$g2jU0Nbg$kPr4.FZfoqT7yHMAVxhZ2/
 ```
 
 # Build install iso
