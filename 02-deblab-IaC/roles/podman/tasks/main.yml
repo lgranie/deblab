@@ -1,0 +1,13 @@
+---
+- name: Install podman packages
+  ansible.builtin.apt:
+    pkg:
+      - podman
+    update_cache: no
+
+- name: Configure podman registries
+  ansible.builtin.copy:
+    dest: /etc/containers/registries.conf
+    content: |
+      unqualified-search-registries=["docker.io", "quay.io"]
+...
