@@ -1,0 +1,48 @@
+---
+- name: "{{ item.key }} before task"
+  local_action: "stat path={{ playbook_dir }}/before/{{ item.key }}.yml"
+  register: before_task
+  become: no
+
+- name: "Execute {{ item.key }} before task"
+  include_tasks: "{{ before_task.stat.path }}"
+  when: before_task.stat.exists
+
+- name: "Copy {{ item.key }} pod definition"
+  ansible.builtin.template:
+    src: "etc/containers/pods/{{ item.key }}-pod.yml.j2"
+    dest: "/etc/containers/pods/{{ item.key }}-pod.yml"
+  register: pod_definition
+
+- name: "Copy systemd {{ item.key }} pod"
+  ansible.builtin.copy:
+    src: "etc/containers/systemd/{{ item.key }}-pod.kube"
+    dest: "/etc/containers/systemd/{{ item.key }}-pod.kube"
+  register: kube_definition
+
+- name: "Pull {{ item.key }} image"
+  loop_control:
+    loop_var: image
+  containers.podman.podman_image:
+    name: "{{ image.name }}"
+    force: true
+    tag: "{{ image.tag }}"
+  loop: "{{ item.value.images }}"
+  register: pull_image
+
+- name: "Restarting {{ item.key }}-pod service"
+  ansible.builtin.systemd_service:
+    state: restarted
+    daemon_reload: true
+    name: "{{ item.key }}-pod"
+  when: kube_definition.changed or pod_definition.changed or pull_image.changed
+
+- name: "{{ item.key }} after task"
+  local_action: "stat path={{ playbook_dir }}/after/{{ item.key }}.yml"
+  register: after_task
+  become: no
+
+- name: "Execute {{ item.key }} after task"
+  include_tasks: "{{ after_task.stat.path }}"
+  when: after_task.stat.exists
+...

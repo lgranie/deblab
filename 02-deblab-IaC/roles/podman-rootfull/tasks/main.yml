@@ -1,0 +1,11 @@
+---
+- name: Creates directories
+  file:
+    path: /etc/containers/pods/
+    state: directory
+    recurse: yes
+
+- name: Install/Configure rootfull pods
+  include_tasks: rootfull-pod.yml
+  with_dict: "{{ rootfull_pods }}"
+...
