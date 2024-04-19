@@ -7,7 +7,7 @@ A home lab on a debian based system installed on a Topton X4C-XL.
 A linux kernel config
 
 ## 01-deblab-install
-Create an usb install iso
+Create an usb install iso with just enough for ansible
 
 ## 02-deblab-IaC
 Ansible playbook

@@ -5,6 +5,7 @@
  - https://gist.github.com/maxivak/1e197ca600499ae2a0b60d8dfa207864
  - https://developers.redhat.com/blog/2018/10/22/introduction-to-linux-interfaces-for-virtual-networking#bridge
  - https://www.cloudnull.io/2019/04/running-services-in-network-name-spaces-with-systemd/
+ - https://github.com/ikke-t/podman-container-systemd
 # Goal
 
 ## Physical interface
@@ -70,4 +71,11 @@ source  ~/.deblab-venv/bin/activate
 ## Install ansible
 ```script shell
 pip install --upgrade ansible
+```
+## Create your playbook
+02-deblab-Iac declare some ansible roles but you must configure your personnal favorite in the playbook directory
+
+# Run ansible
+```script shell
+ansible-playbook playbook/playbook.yml -D -v
 ```
