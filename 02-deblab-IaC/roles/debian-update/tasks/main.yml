@@ -10,7 +10,10 @@
 - name: Update all packages
   ansible.builtin.apt:
     update_cache: true
-    cache_valid_time: 0
+    cache_valid_time: 3600
+    autoclean: true
+    autoremove: true
+    purge: true
     name: "*"
     state: latest
 
