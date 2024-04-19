@@ -1,4 +1,16 @@
 ---
+- name: Backup /etc/network/interfaces
+  ansible.builtin.copy:
+    src: etc/network/interfaces
+    dest: /etc/network/interfaces.bck
+  notify:
+    - Restarting networkd service
+
+- name: Delete /etc/network/interfaces
+  ansible.builtin.file:
+    path: /etc/network/interfaces
+    state: absent
+
 - name: Disable networking service
   ansible.builtin.systemd_service:
     enabled: false

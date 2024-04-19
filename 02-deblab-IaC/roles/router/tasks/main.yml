@@ -1,4 +1,35 @@
 ---
+- name: Get network tools
+  ansible.builtin.apt:
+    pkg:
+      - bridge-utils
+      - iptables
+    update_cache: no
+
+- name: Copy systemd networkd wait online configuration
+  ansible.builtin.copy:
+    src: etc/systemd/system/systemd-networkd-wait-online.service.d/wait-for-only-lanbr0.conf
+    dest: /etc/systemd/system/systemd-networkd-wait-online.service.d/
+    mode: '0644'
+  notify:
+    - Restarting networkd service
+
+- name: Copy systemd-netns
+  ansible.builtin.copy:
+    src: etc/systemd/system/systemd-netns@.service
+    dest: /etc/systemd/system/
+    mode: '0644'
+  notify:
+    - Restarting networkd service
+
+- name: Copy systemd-netns-access
+  ansible.builtin.copy:
+    src: etc/systemd/system/systemd-netns-access@.service
+    dest: /etc/systemd/system/
+    mode: '0644'
+  notify:
+    - Restarting networkd service
+
 - name: Configure lan network
   import_tasks: network/networkd-lan.yml
 
