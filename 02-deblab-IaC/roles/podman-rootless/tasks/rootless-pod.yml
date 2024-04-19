@@ -1,0 +1,75 @@
+---
+- name: "Creates containers {{ item.key }} directories"
+  loop_control:
+    loop_var: dir
+  ansible.builtin.file:
+    path: "/home/{{ item.value.user }}/data/{{ item.key }}/{{ dir }}"
+    state: directory
+    recurse: yes
+  loop: "{{ item.value.volumes }}"
+  become: true
+  become_user: "{{ item.value.user }}"
+  when: item.value.volumes is defined
+
+- name: "{{ item.key }} before task"
+  local_action: "stat path={{ playbook_dir }}/before/{{ item.key }}.yml"
+  register: before_task
+  become: no
+
+- name: "Execute {{ item.key }} before task"
+  include_tasks: "{{ before_task.stat.path }}"
+  when: before_task.stat.exists
+
+- name: Install/Configure {{ item.key }} pod 
+  become: true
+  become_user: "{{ item.value.user }}"
+  block:
+    - name: "Creates directories for {{ item.key }} pod"
+      file:
+        path: "/home/{{ item.value.user }}/data/{{ item.key }}"
+        state: directory
+        recurse: yes
+
+    - name: "Copy {{ item.key }} pod definition"
+      ansible.builtin.template:
+        src: "home/{{ item.value.user }}/.config/containers/pods/{{ item.key }}-pod.yml.j2"
+        dest: "/home/{{ item.value.user }}/.config/containers/pods/{{ item.key }}-pod.yml"
+      register: pod_definition
+
+    - name: "Copy systemd {{ item.key }} pod definition"
+      ansible.builtin.template:
+        src: "home/.config/containers/systemd/rootless-pod.kube.j2"
+        dest: "/home/{{ item.value.user }}/.config/containers/systemd/{{ item.key }}-pod.kube"
+      register: kube_definition
+
+    - name: "Pull {{ item.key }} image"
+      loop_control:
+        loop_var: image
+      containers.podman.podman_image:
+        name: "{{ image.name }}"
+        force: true
+        tag: "{{ image.tag }}"
+      loop: "{{ item.value.images }}"
+      register: pull_image
+      
+    - name: "Restarting {{ item.key }} service"
+      ansible.builtin.systemd_service:
+        state: restarted
+        daemon_reload: true
+        scope: user
+        name: "{{ item.key }}-pod"
+      when: kube_definition.changed or pod_definition.changed or pull_image.changed
+
+- name: "{{ item.key }} after task"
+  local_action: "stat path={{ playbook_dir }}/after/{{ item.key }}.yml"
+  register: after_task
+  become: no
+
+- name: "Execute {{ item.key }} after task"
+  include_tasks: "{{ after_task.stat.path }}"
+  when: after_task.stat.exists
+
+- name: Pause until you can verify updates to an application were successful
+  ansible.builtin.pause:
+  when: kube_definition.changed or pod_definition.changed or pull_image.changed
+...

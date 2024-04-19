@@ -1,0 +1,11 @@
+[Unit]
+Description=A {{ item.key }} podman pod yaml based services
+After=network-online.target
+
+[Kube]
+Yaml=/home/{{ item.value.user }}/.config/containers/pods/{{ item.key }}-pod.yml
+Network={{ item.value.user }}.network
+
+[Install]
+# Start by default on boot
+WantedBy=default.target {% if item.value.wantedBy is defined %}{{ item.value.wantedBy }}{% endif %}

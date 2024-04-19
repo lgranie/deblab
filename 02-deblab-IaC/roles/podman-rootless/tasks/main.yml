@@ -1,0 +1,34 @@
+---
+- name: Install rootless podman packages
+  ansible.builtin.apt:
+    pkg:
+      - acl
+      - fuse-overlayfs
+      - slirp4netns
+      - uidmap
+    update_cache: no
+
+- name: Check for user namespace support in kernel
+  ansible.builtin.stat:
+    path: /proc/sys/kernel/unprivileged_userns_clone
+  register: unprivileged_userns_clone
+  changed_when: false
+
+- name: Allow unprivileged users on Debian
+  ansible.posix.sysctl:
+    name: kernel.unprivileged_userns_clone
+    value: '1'
+    state: present
+    sysctl_file: /etc/sysctl.d/userns.conf
+    sysctl_set: true
+  when:
+    - unprivileged_userns_clone.stat.exists
+
+- name: Install/Configure rootless pods user runner
+  include_tasks: rootless-pod-runner.yml
+  loop: "{{ rootless_pods.runners }}"
+
+- name: Install/Configure rootless pods
+  include_tasks: rootless-pod.yml
+  with_dict: "{{ rootless_pods.pods }}"
+...

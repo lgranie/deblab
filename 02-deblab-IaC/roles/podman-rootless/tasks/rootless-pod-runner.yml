@@ -1,0 +1,35 @@
+---
+- name: Create podman runner
+  ansible.builtin.user:
+    name: "{{ item.login }}"
+    comment: "{{ item.fullname }}"
+
+- name: Creates containers directories
+  loop_control:
+    loop_var: dir
+  ansible.builtin.file:
+    path: "/home/{{ item.login }}/.config/containers/{{ dir }}"
+    state: directory
+    recurse: yes
+  loop:
+    - pods
+    - systemd
+  become: true
+  become_user: "{{ item.login }}"
+  
+- name: "Copy default {{ item.login }} network definition"
+  ansible.builtin.template:
+    src: home/.config/containers/systemd/rootless.network.j2
+    dest: "/home/{{ item.login }}/.config/containers/systemd/{{ item.login }}.network"
+  register: kube_definition_changed
+
+- name: Check if podman runner is lingering
+  stat:
+    path: "/var/lib/systemd/linger/{{ item.login }}"
+  register: user_lingering
+
+- name: Enable lingering is needed
+  command: "loginctl enable-linger {{ item.login }}"
+  when:
+    - not user_lingering.stat.exists
+...
